@@ -1,0 +1,77 @@
+Ankit Gola
+2017EET2296
+
+FTP implementation for COL788
+
+Compilation
+make all            :       Compile all source files
+make ftpd           :       Compile server source file
+make client         :       Compile client source file
+
+
+Execution
+Server              :       sudo ./ftpd <port number>
+Client              :       ./client <server address> <port number>
+
+Note: port number is optional. By default, it is set to 2121
+
+
+Implementation
+FTP is a protocol for sharing files over the network. It is a client server model. 
+Pi0_w being a low power device is perfect for implementing an always on embedded system to work as the server.
+
+Server
+Server is implemented as an infinite loop listening continously listening for client requests. 
+When a new client connects, the server forks and spawns a new thread to service that client. Server can support maximum of 8 concurrent clients. This limit can be edited in include/vars.h file. However, with pi0_w being a low power system as it is, it is advisable to not make this number too high, as it may adversly affect the performance of server.
+Once a client connects, its server thread continously loops, listens to client requests, parses them, and services them appropriately. The list of commands supported by the server are listed below.
+When the client disconnects, the server thread servicing it also dies.
+However the main parent server thread loops continuousl, listens for more client connections, spawning new server threads as required. 
+The main server thread is exited using ctrl+c combination.
+
+Client
+Clients are the users that can connect to the server using the right IP and port combination. Mutiple clients can connect to the same server. 
+Once a client connects, it may execute a certain number of commands. However for complete access of server, the client needs to login to the server first.
+The login is accomplished using the username and password combination saved on the host system in /etc/shadow.
+The client exits using the bye command. It does not die using ctrl+c SIGNAL.
+Once a client disconnects, the server thread servicing it also dies.
+
+Supported commands
+    user    :   Supply username to server
+    pass    :   Supply password for the said user to server
+    ls      :   List files and folders on server
+    pwd     :   Change curernt working directory on server
+    cd      :   Chande directory on server
+    cdup    :   Switch to parent directory on server
+    rename  :   Rename file/folder on server
+    put     :   Put a file on server
+    get     :   Get a file from server
+    type    :   Change connection type
+    mkd     :   Get a file from server
+    dele    :   Delete a file from server
+    rnfr    :   Start renaming a file on server
+    rnto    :   Stop renaming  a file on server
+    rmd     :   Delete a directory from server
+    lcd     :   Local cd on client
+    lls     :   Local ls on client
+    lpwd    :   Local pwd on client
+    bye     :   Close the connection to server
+    help    :   Print help menu
+
+
+File and directory structure
+FTP_COL788                  :   Parent directory  
+    |====bin                :   Directory containing executable binaries
+    |       |----server     :   Server executable
+    |       |----client     :   Client executable
+    |====include            :   Include headers directory
+    |       |----utils.h    :   Header file for utility functions
+    |       |----vars.h     :   Header file for variables and defines
+    |       |----log.h      :   Header file for logging utility functions
+    |====lib                :   Lib directory with function definations
+    |       |----utils.c    :   Function definations for utility functions
+    |       |----vars.c     :   Contains struct for supported commands
+    |       |----log.c      :   Function definations for logging utility
+    |----client.c           :   Source file for client
+    |----server.c           :   Source file for server
+    |----makefile           :   make file
+    |----README             :   README
